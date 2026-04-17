@@ -1,0 +1,22 @@
+{
+  "name": "agents-md-kit",
+  "version": "0.1.0",
+  "description": "Toolkit for AGENTS.md — tool-neutral skills for drafting, curating, and maintaining AGENTS.md across projects, with bridge support for Claude Code and Gemini CLI.",
+  "author": {
+    "name": "dev-goraebap",
+    "email": "dev.goraebap@gmail.com"
+  },
+  "homepage": "https://github.com/dev-goraebap/my-agent-kit",
+  "repository": "https://github.com/dev-goraebap/my-agent-kit",
+  "license": "MIT",
+  "keywords": [
+    "agents-md",
+    "agent-skills",
+    "claude-code",
+    "cursor",
+    "copilot",
+    "codex",
+    "windsurf",
+    "gemini-cli"
+  ]
+}
