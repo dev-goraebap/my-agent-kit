@@ -8,8 +8,8 @@
     {
       "name": "agents-md-kit",
       "source": "./agents-md-kit/",
-      "description": "Toolkit for AGENTS.md — tool-neutral skills for drafting, curating, and maintaining AGENTS.md across projects, with bridge support for Claude Code and Gemini CLI.",
-      "version": "0.1.0"
+      "description": "Toolkit for AGENTS.md covering the draft → grow → maintain lifecycle: draft-agents-md (draft generation from project analysis), refine-boundaries (error-driven Boundaries accumulation), audit-agents-md (anti-pattern diagnosis and consent-based improvement). Bridge support for Claude Code and Gemini CLI included.",
+      "version": "0.2.0"
     },
     {
       "name": "misc",
