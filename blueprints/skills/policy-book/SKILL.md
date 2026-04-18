@@ -42,23 +42,32 @@ description: >
 
 ## 2. 저장 경로 규약
 
-`domain-model`과 동일하게 `AGENTS.md`(우선) 또는 `CLAUDE.md`의 `## Blueprints Paths` 섹션에 경로를 기록한다. **별도 config 파일을 만들지 않는다.**
+`domain-model`과 동일 규약이다. **별도 config 파일도, 전용 섹션도 만들지 않는다.** 루트 `AGENTS.md`(우선) 또는 `CLAUDE.md`의 **기존 `## References` 섹션**에 한 줄로 얹는다.
 
 ### 2-1. 최초 실행 절차
 
-1. source 파일에서 `## Blueprints Paths > Policies folder` 항목을 찾는다.
-2. 있으면 그 경로 사용 → 3-2로.
-3. 없으면 인터뷰:
+1. source 파일을 선택한다 — `AGENTS.md` → `CLAUDE.md` 순.
+2. `## References`(또는 등가) 섹션에서 **정책 폴더 경로를 찾는다** — "Policy book:", "Policies:", "정책 폴더:" 같이 이 스킬 용도로 해석되는 한 줄.
+3. 찾으면 그 경로 사용 → 3-2로 진행.
+4. 못 찾으면 인터뷰:
 
-```
-정책 문서를 어디에 저장할까요?
-  기본값: docs/policies/
-  (폴더명을 바꾸려면 예: 'rules', 'policies-book', 'codex')
+    ```
+    정책 문서를 어디에 저장할까요?
+      기본값: docs/policies/
+      (폴더명을 바꾸려면 예: 'rules', 'policies-book', 'codex')
 
-입력:
-```
+    입력:
+    ```
 
-4. `## Blueprints Paths` 섹션(없으면 생성)에 `- Policies folder: <경로>` 한 줄 추가. 이후 재질문 X.
+5. source 파일의 `## References`에 한 줄 추가(섹션이 없으면 문서 끝에 신설):
+
+    ```markdown
+    ## References
+    ...
+    - Policy book: `docs/policies/`
+    ```
+
+6. 이후 재질문 X.
 
 ### 2-2. 정책 폴더 신규 생성 시
 

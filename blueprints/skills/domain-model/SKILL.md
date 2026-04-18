@@ -42,37 +42,38 @@ description: >
 
 ## 2. 저장 경로 규약 (중요)
 
-이 스킬은 경로를 **별도 config 파일에 저장하지 않는다**. 프로젝트 루트의 `AGENTS.md`(우선) 또는 `CLAUDE.md`에 `## Blueprints Paths` 섹션을 만들어 사용한다.
+이 스킬은 경로를 **별도 config 파일에도, 전용 섹션에도 저장하지 않는다**. 루트 `AGENTS.md`(우선) 또는 `CLAUDE.md`의 **기존 `## References` 섹션**에 한 줄로 얹는다 (한국어로 운영되는 저장소라면 "참고 문서" 같은 등가 섹션도 허용). References는 거의 모든 팀 공개 지침 파일에 이미 존재하는 공통·범용 섹션이라 이 한 줄을 자연스럽게 담을 수 있다.
 
 ### 2-1. 최초 실행 절차
 
-1. 프로젝트 루트에서 `AGENTS.md` → `CLAUDE.md` 순으로 source 파일을 선택한다 (없으면 `AGENTS.md`를 새로 만들지 않고 사용자에게 물어 결정).
-2. source 파일에 `## Blueprints Paths` 섹션이 있고 `Domains folder:` 항목이 있으면 그 경로를 사용한다 → 3-2로.
-3. 없으면 인터뷰:
+1. 프로젝트 루트에서 source 파일을 선택한다 — `AGENTS.md` → `CLAUDE.md` 순.
+2. source 파일의 `## References`(또는 등가) 섹션에서 **도메인 폴더 경로를 찾는다** — "Domain models:", "도메인 모델:", "domains:" 같이 이 스킬 용도로 해석되는 한 줄이 있는지 확인한다.
+3. 찾으면 그 경로를 사용 → 3-2로 진행.
+4. 못 찾으면 인터뷰:
 
-```
-도메인 문서를 어디에 저장할까요?
-  기본값: docs/domains/
-  (폴더명을 바꾸려면 예: 'contexts', 'bounded-contexts')
+    ```
+    도메인 문서를 어디에 저장할까요?
+      기본값: docs/domains/
+      (폴더명을 바꾸려면 예: 'contexts', 'bounded-contexts')
 
-입력:
-```
+    입력:
+    ```
 
-4. 인터뷰 결과를 `## Blueprints Paths` 섹션에 추가한다. 섹션이 아예 없으면 새로 생성:
+5. 인터뷰 결과를 source 파일에 기록:
+    - `## References` 섹션이 이미 있으면 **그 목록 끝에 한 줄 추가**.
+    - 없으면 문서 끝에 `## References` 섹션을 신설해 한 줄 추가 — 이건 blueprints 전용이 아니라 범용 섹션이라 신설해도 저장소 컨벤션을 늘리지 않는다.
 
-```markdown
-## Blueprints Paths
+    ```markdown
+    ## References
+    ...
+    - Domain models: `docs/domains/`
+    ```
 
-<!-- blueprints 플러그인의 스킬들이 프로젝트별 저장 경로를 이 섹션에서 읽고 씁니다. -->
-
-- Domains folder: `docs/domains/`
-```
-
-5. 이후 호출부터는 **재질문하지 않는다**.
+6. 이후 호출부터는 **재질문하지 않는다**.
 
 ### 2-2. 경로 변경 요청
 
-사용자가 "도메인 폴더 경로 바꿔줘"라고 요청하면 섹션의 값을 갱신하고, **기존 도메인 폴더는 이동하지 않는다** (사용자가 `git mv` 수동으로 옮기도록 안내). 자동 이동은 외부에 보이는 변경이라 Ask first 대상이다.
+사용자가 "도메인 폴더 경로 바꿔줘"라고 요청하면 `## References`의 해당 줄을 갱신하고, **기존 도메인 폴더는 자동으로 이동하지 않는다** — `git mv`는 외부에 보이는 변경이라 사용자가 수동으로 수행하도록 안내한다 (Ask first 성격).
 
 ---
 

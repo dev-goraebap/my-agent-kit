@@ -52,20 +52,24 @@ npx skills add dev-goraebap/grimoire --skill lean-prd --skill erd --skill domain
 
 ## 공통 규약 — 경로 저장
 
-이 플러그인의 스킬들은 **프로젝트별 저장 경로를 별도 config 파일이 아니라 `AGENTS.md` / `CLAUDE.md` 섹션**에 기록합니다. 스킬이 최초 실행될 때 한 번 인터뷰로 경로를 정하고, 해당 섹션을 자동으로 생성합니다. 이후에는 스킬이 이 섹션을 읽어 재질문하지 않습니다.
+이 플러그인의 스킬들은 **프로젝트별 저장 경로를 별도 config 파일에도, 전용 섹션에도 두지 않습니다**. 루트 `AGENTS.md` / `CLAUDE.md`의 **기존 `## References` 섹션**(또는 한국어 저장소의 "참고 문서" 같은 등가 섹션)에 한 줄로 얹습니다. References는 이미 대부분의 팀 공개 지침 파일에 존재하는 범용 섹션이라 별도 컨벤션을 추가할 필요가 없습니다.
 
-생성되는 섹션 예시:
+첫 실행 때 스킬이 경로를 인터뷰하고, 이후에는 같은 줄을 읽어 재질문 없이 사용합니다.
+
+예시 (스킬들이 기록한 결과):
 
 ```markdown
-## Blueprints Paths
+## References
 
+- Agent Skills 스펙: https://agentskills.io
+- ...
 - PRD: `docs/lean-prd.md`
-- Domains folder: `docs/domains/`
-- Policies folder: `docs/policies/`
-- ERDs folder: `docs/design/`
+- Domain models: `docs/domains/`
+- Policy book: `docs/policies/`
+- ERDs: `docs/design/`
 ```
 
-폴더명과 위치는 모두 인터뷰 중 사용자가 원하는 대로 바꿀 수 있습니다 (예: `domains` → `contexts`, `policies` → `rules`).
+폴더명과 위치는 모두 인터뷰 중 원하는 대로 바꿀 수 있습니다 (예: `domains` → `contexts`, `policies` → `rules`).
 
 ## 주의
 
