@@ -16,7 +16,7 @@
 ### 그 외 에이전트 (`skills.sh`)
 
 ```bash
-npx skills add dev-goraebap/grimoire --skill pdf-parser --skill claude-hook-notify-setup --skill docs-to-md --skill fsd-docs --skill lean-prd
+npx skills add dev-goraebap/grimoire --skill pdf-parser --skill claude-hook-notify-setup --skill docs-to-md --skill fsd-docs --skill lean-prd --skill erd
 ```
 
 ## 포함된 스킬
@@ -143,6 +143,30 @@ PRD 만들어줘
 **요구:** 없음
 
 자세한 절차·인터뷰 스크립트는 [SKILL.md](skills/lean-prd/SKILL.md) 참조.
+
+---
+
+### `erd` (v1.0)
+
+PRD·도메인 설명·테이블 목록에서 **Mermaid ERD(`.mmd`)**를 생성합니다. 다크 테마 + handDrawn 스타일 기본, 개념·논리·물리 3수준을 모두 지원합니다.
+
+**사용 예:**
+
+```
+ERD 만들어줘
+이 도메인 설명으로 논리 ERD 그려줘
+현재 ERD를 물리 수준으로 올려줘
+```
+
+**특징:**
+- 3수준 지원 (개념: 엔티티+관계 / 논리: 속성+추상타입 / 물리: 컬럼+인덱스)
+- 수준 간 전환 가능 (개념↔논리↔물리)
+- 엔티티별 15색 팔레트 자동 배정
+- VS Code Mermaid 프리뷰에서 바로 렌더링
+
+**요구:** 없음 (VS Code Mermaid 프리뷰 확장 권장)
+
+자세한 문법·색상 가이드는 [SKILL.md](skills/erd/SKILL.md) 참조.
 
 ## 주의
 

@@ -11,7 +11,7 @@
 | 챕터 | 설명 | 문서 |
 |---|---|---|
 | `agent-cowork` | 에이전트 협업 도구 — 공개 지침 운영, 공유 문서 관리, 컨텍스트 이관 (공개 트랙) | [README](agent-cowork/README.md) |
-| `misc` | 개인 잡동사니 스킬 모음 — PDF 파싱, 토스트 알림, 문서 크롤, FSD 지식팩, Lean PRD 등 (개인 트랙) | [README](misc/README.md) |
+| `misc` | 개인 잡동사니 스킬 모음 — PDF 파싱, 토스트 알림, 문서 크롤, FSD 지식팩, Lean PRD, ERD 등 (개인 트랙) | [README](misc/README.md) |
 
 각 챕터는 Claude Code 플러그인으로 묶어 받거나, `skills.sh`로 스킬만 골라 받을 수 있습니다. 자세한 설치법은 각 챕터의 README를 참고하세요.
 
