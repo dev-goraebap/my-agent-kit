@@ -15,7 +15,7 @@ git commit -m "chore: bump shared-docs to <short-sha>"
 
 설명:
 
-- `--remote` — config의 추적 브랜치(보통 `main`)의 최신 커밋을 가져옴 (이 옵션 없으면 `.gitmodules`에 박힌 sha만 다시 체크아웃)
+- `--remote` — `.gitmodules`의 `submodule.<name>.branch` (보통 `main`)의 최신 커밋을 가져옴 (이 옵션 없으면 그 파일에 박힌 sha만 다시 체크아웃)
 - `--merge` — submodule 안에 로컬 변경이 있으면 merge 시도. 충돌 가능. `--rebase`도 옵션이지만 문서 레포는 merge가 단순
 - 마지막 커밋이 핵심 — submodule sha bump를 부모 레포에도 기록해야 다른 협업자가 같은 버전을 보게 됨. 이걸 빠뜨리면 "내 로컬에서만 새 버전" 상태
 
@@ -25,9 +25,9 @@ git commit -m "chore: bump shared-docs to <short-sha>"
 
 | # | 확인 | 실패 시 |
 |---|---|---|
-| 1 | submodule 디렉토리가 dirty(수정됨)? `git -C <path> status --porcelain` | dirty면 sync 거부. write 동작으로 먼저 처리하거나 `git -C <path> stash` 안내 |
-| 2 | 부모 레포 working tree clean? | dirty면 경고 — sync는 새 submodule sha 커밋을 만드니, 다른 무관한 변경과 섞이면 history가 지저분해짐 |
-| 3 | config 검증 | [config.md](config.md) 검증 절차 |
+| 1 | 대상 submodule 식별 ([values.md](values.md)의 복수 submodule 규칙) | submodule이 하나도 없으면 "먼저 `init` 호출하세요" |
+| 2 | submodule 디렉토리가 dirty(수정됨)? `git -C <path> status --porcelain` | dirty면 sync 거부. write 동작으로 먼저 처리하거나 `git -C <path> stash` 안내 |
+| 3 | 부모 레포 working tree clean? | dirty면 경고 — sync는 새 submodule sha 커밋을 만드니, 다른 무관한 변경과 섞이면 history가 지저분해짐 |
 
 ## detached HEAD 처리
 

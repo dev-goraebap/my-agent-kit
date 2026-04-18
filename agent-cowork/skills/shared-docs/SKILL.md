@@ -5,9 +5,10 @@ description: >
   **git submodule**로 관리. 한 스킬 안에서 다음 4동작을 처리:
   init(공유 문서 레포 신규 생성 + submodule 연결), sync(원격 갱신 받기),
   write(문서 작성 → push → PR, GitHub Flow 기반), doctor(흔한 함정 검증).
-  경로/브랜치/원격 URL은 **프로젝트별 config로 주입**(하드코딩 금지).
-  GitHub Flow 기본: main + short-lived 브랜치 + PR. 작은 수정은 main
-  직접 push 허용.
+  경로/브랜치/원격 URL은 **`.gitmodules`를 source of truth로** 읽고, 복수
+  submodule 환경의 식별 힌트만 `AGENTS.md`/`CLAUDE.md`의 `## References`
+  섹션에 남긴다 — 별도 config 파일은 만들지 않는다. GitHub Flow 기본:
+  main + short-lived 브랜치 + PR. 작은 수정은 main 직접 push 허용.
   Triggers: "shared docs", "공유 문서 셋업", "submodule 추가",
   "submodule 갱신", "공유 문서 수정", "공유 문서 PR", "공유 문서 진단",
   "공유 PRD 업데이트", "shared-docs init", "shared-docs sync",
@@ -41,11 +42,11 @@ metadata:
 
 각 동작의 상세 워크플로우는 references/ 분리 — 사용자가 요청한 동작에 해당하는 references만 로드해 토큰 효율 유지.
 
-## 설정 주입 (config)
+## 값 해결 (path·URL·branch 등)
 
-이 스킬은 경로·브랜치·원격 URL을 **하드코딩하지 않는다**. 프로젝트별 config로 받고, CLI 인자로 덮어쓸 수 있다.
+이 스킬은 경로·브랜치·원격 URL을 **하드코딩하지 않지만, 별도 config 파일도 만들지 않는다**. 이미 있는 곳(`.gitmodules`, `remote_url` 자체)에서 읽거나 추론하고, 복수 submodule 환경에서 어느 게 shared-docs인지 구분이 필요할 때만 `AGENTS.md`/`CLAUDE.md`의 `## References` 섹션에 힌트 한 줄을 남긴다.
 
-자세한 schema·주입 우선순위·검증은 [references/config.md](references/config.md) 참조.
+자세한 해결 순서·환경변수·CLI 인자는 [references/values.md](references/values.md) 참조.
 
 ## 동작
 
@@ -76,13 +77,13 @@ metadata:
 | # | 확인 | 실패 시 |
 |---|---|---|
 | 1 | 현재 디렉토리가 git 저장소 (`git rev-parse --git-dir`) | "git 저장소 안에서 호출하세요." 후 중단 |
-| 2 | shared-docs config 검증 통과 ([config.md](references/config.md)) | 누락 키 + 예시 안내 후 중단. doctor는 D8로 잡음 |
+| 2 | 값 해결 통과 ([values.md](references/values.md)) — `init`은 입력값 검증, 그 외 동작은 대상 submodule 식별 | 누락 시 친절한 메시지 + 해결 방법 안내 후 중단. doctor는 D8로 잡음 |
 
 동작별 추가 가드레일:
 
 | 동작 | # | 확인 | 실패 시 |
 |---|---|---|---|
-| `init` | 1 | 마운트 경로(`config.path`)가 비어있거나 미존재 | 사용자 확인: 덮어쓰기 / 다른 path / 취소 |
+| `init` | 1 | 마운트 경로(입력받은 `path`)가 비어있거나 미존재 | 사용자 확인: 덮어쓰기 / 다른 path / 취소 |
 | `init` | 2 | 원격 인증 ping 통과 (`ssh -T <host>` 또는 `git ls-remote <url>`) | [init.md 인증 섹션](references/init.md#인증) 안내 후 중단 |
 | `sync` | 1 | submodule 디렉토리가 clean (`git -C <path> status --porcelain` 빈 결과) | dirty면 stash 또는 write 동작 안내, sync 중단 |
 | `sync` | 2 | 부모 레포 working tree가 clean | 경고만 — 사용자가 진행 결정 |
@@ -92,7 +93,8 @@ metadata:
 
 ## 금지 행동
 
-- **경로/브랜치/URL을 본문이나 references에 하드코딩하기** — 팀마다 컨벤션이 다르고 한 번 박힌 기본값은 사실상 강제가 된다. 모두 [config](references/config.md) 주입
+- **경로/브랜치/URL을 본문이나 references에 하드코딩하기** — 팀마다 컨벤션이 다르고 한 번 박힌 기본값은 사실상 강제가 된다. 모두 [values.md](references/values.md)의 해결 순서대로 외부에서 받는다
+- **별도 shared-docs config 파일(`.claude/shared-docs.json` 등)을 만들거나 읽기** — 같은 정보를 두 곳에 두면 drift가 생긴다. `.gitmodules`가 이미 source of truth다 (0.6.0 이상)
 - **submodule 디렉토리 안에서 부모 레포 명령 실행하기** — CWD를 명확히 분리. 작업 시 `cd <path>`로 들어가고 끝나면 `cd -`로 복귀
 - **`main` 브랜치 force-push** — 문서 레포여도 협업자 영향이 큼. 일반 push가 거부되면 큰 수정 흐름(브랜치+PR)으로 전환을 제안할 뿐
 - **사용자 확인 없이 PR 자동 생성·머지** — write 동작이 PR 생성까지는 도와도 머지 버튼은 사용자 손에 둔다. 머지 후 부모 레포 bump도 사용자 동의 받기
