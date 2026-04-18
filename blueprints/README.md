@@ -1,24 +1,34 @@
 # blueprints
 
-**기획·설계 문서 스킬 묶음.** 구현에 실제로 도움이 되는 문서(PRD, ERD, 도메인 모델, 정책)를 ID 기반으로 생성·관리합니다. 이름 그대로 **구현 전 단계의 도면들**.
+구현을 돕는 기획·설계 문서 스킬 4종. 각 스킬이 만드는 문서는 생성 후에도 프로젝트와 함께 수정·확장되는 것을 전제로 설계되어 있습니다 (그래서 스킬 이름에 `make-` 접두사가 없습니다).
 
-## 철학
+## 어떤 스킬을 언제 쓰나
 
-- **살아 있는 문서.** 스킬 이름에 `make-` 접두사를 쓰지 않는 건 의도적입니다 — 이 문서들은 한 번 만들고 끝나는 것이 아니라 프로젝트 수명 동안 계속 수정·확장됩니다.
-- **ID 추적성.** 각 문서에 ID(`POL-0001`, `UC-001` 등)를 붙여 구현·테스트·PR과 교차 참조가 가능하게 만듭니다.
-- **경로는 `AGENTS.md`에.** 프로젝트별 저장 경로는 별도 config 파일이 아니라 `AGENTS.md` / `CLAUDE.md` 섹션에 기록합니다 — 에이전트가 자동으로 읽는 규약을 재사용합니다.
-- **도메인이 기준.** 도메인 경계를 기준으로 문서를 그루핑하고, 경계를 가로지르는 정책은 별도 법전에 둡니다.
-
-## 포함된 스킬
-
-| 스킬 | 역할 | ID 체계 |
+| 스킬 | 쓰는 때 | 산출물 |
 |---|---|---|
-| [`lean-prd`](skills/lean-prd/SKILL.md) | 비전·범위를 담은 한 페이지 PRD (7섹션) | 없음 (단일 문서) |
-| [`erd`](skills/erd/SKILL.md) | Mermaid ERD 생성 (개념·논리·물리 3수준) | 없음 (파일명 기반) |
-| [`domain-model`](skills/domain-model/SKILL.md) | 도메인 경계·용어·불변 규칙 | 폴더명 기반 |
-| [`policy-book`](skills/policy-book/SKILL.md) | 비즈니스 정책 법전 (ADR 스타일) | `POL-XXXX` |
+| [`lean-prd`](skills/lean-prd/SKILL.md) | 프로젝트 시작 시점, 비전·범위 정리 | 한 장짜리 PRD (`docs/lean-prd.md`) |
+| [`erd`](skills/erd/SKILL.md) | **관계형 DB 설계**가 필요할 때 | Mermaid `.mmd` (개념·논리·물리 3수준) |
+| [`domain-model`](skills/domain-model/SKILL.md) | Bounded Context의 경계·용어·불변 규칙 고정 | 도메인별 `DOMAIN.md` (폴더로 그루핑) |
+| [`policy-book`](skills/policy-book/SKILL.md) | 비즈니스 정책을 이력·버전과 함께 관리 | `POL-XXXX.md` 묶음 + 인덱스 |
 
 각 스킬 상세는 링크된 `SKILL.md` 참조.
+
+## ID 채번
+
+이 플러그인에서 **전역 ID**를 쓰는 건 `policy-book` 하나입니다.
+
+- **`POL-XXXX`** — 정책 파일마다 4자리 ID가 자동 채번되며, 대체·폐지·변경 이력 추적의 축이 됩니다.
+- 다른 스킬들은 ID 대신 **파일명·폴더명**으로 식별합니다:
+  - `lean-prd` — 파일 한 장 (`{project}-lean-prd.md`)
+  - `erd` — 파일명 패턴 (`{project}-{level}-erd.mmd`)
+  - `domain-model` — 도메인 폴더 슬러그 (`order/`, `payment/`)
+
+채번 부담을 지는 건 정책뿐입니다.
+
+## 제한·주의
+
+- **`erd`는 관계형 DB 전제입니다.** Entity-Relationship 모델 자체가 RDBMS 설계 언어라 MongoDB·DynamoDB·Firestore 같은 문서·KV·그래프 DB에는 적용 범위가 제한적입니다. 비관계형 저장소의 구조는 `domain-model`의 엔티티 섹션이나 별도 스키마 다이어그램으로 표현하는 게 맞습니다.
+- **도메인 불변 규칙(`domain-model`의 Invariants)과 정책(`policy-book`)을 혼동하지 마세요.** 전자는 "바꾸면 도메인이 망가지는" 규칙, 후자는 "비즈니스 결정으로 바뀔 수 있는" 규칙입니다. 판별 질문은 각 SKILL.md 참조.
 
 ## 스킬 간 관계
 
@@ -29,11 +39,11 @@ lean-prd         ← 비전·범위 (한 장)
 domain-model     ← 도메인 경계·용어·불변 규칙 (도메인당 한 장)
     │       ─────┐
     ▼            ▼
-  erd        policy-book    ← ADR 스타일, 경계 가로지름
-(데이터 모델)  (비즈니스 정책)
+  erd        policy-book    ← 정책, 경계 가로지름
+(RDBMS 모델)  (POL-XXXX)
 ```
 
-**추적 관계**: `lean-prd` → `domain-model` → `policy-book`으로 상위→하위 참조. `erd`는 `domain-model`과 나란히 데이터 구조를 묘사.
+`lean-prd` → `domain-model` → `policy-book`으로 상위→하위 참조. `erd`는 `domain-model`과 나란히 데이터 구조를 묘사합니다.
 
 ## 설치
 
@@ -52,7 +62,7 @@ npx skills add dev-goraebap/grimoire --skill lean-prd --skill erd --skill domain
 
 ## 공통 규약 — 경로 저장
 
-이 플러그인의 스킬들은 **프로젝트별 저장 경로를 별도 config 파일에도, 전용 섹션에도 두지 않습니다**. 루트 `AGENTS.md` / `CLAUDE.md`의 **기존 `## References` 섹션**(또는 한국어 저장소의 "참고 문서" 같은 등가 섹션)에 한 줄로 얹습니다. References는 이미 대부분의 팀 공개 지침 파일에 존재하는 범용 섹션이라 별도 컨벤션을 추가할 필요가 없습니다.
+이 플러그인의 스킬들은 **프로젝트별 저장 경로를 별도 config 파일에도, 전용 섹션에도 두지 않습니다**. 루트 `AGENTS.md` / `CLAUDE.md`의 **기존 `## References` 섹션**(또는 "참고 문서" 등가 섹션)에 한 줄로 얹습니다.
 
 첫 실행 때 스킬이 경로를 인터뷰하고, 이후에는 같은 줄을 읽어 재질문 없이 사용합니다.
 
