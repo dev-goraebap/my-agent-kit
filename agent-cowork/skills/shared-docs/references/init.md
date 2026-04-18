@@ -1,6 +1,6 @@
 # init
 
-새 공유 문서 레포를 만들고(선택) 현재 레포에 submodule로 연결한다. 인증·경로·원격 URL은 모두 [config](config.md)에서 받는다.
+새 공유 문서 레포를 만들고(선택) 현재 레포에 submodule로 연결한다. 경로·원격 URL·추적 브랜치는 CLI 인자 또는 인터뷰로 받고(`init`은 `.gitmodules`가 아직 없는 시점이므로), 이후 동작(sync/write/doctor)은 생성된 `.gitmodules`에서 읽는다. 자세한 해결 순서는 [values.md](values.md) 참조.
 
 ## 두 가지 모드
 
@@ -15,9 +15,9 @@
 
 | # | 확인 | 실패 시 |
 |---|---|---|
-| 1 | config 검증 통과 ([config.md](config.md)의 검증 절차) | 에러 메시지 + 누락 키 안내, 중단 |
+| 1 | 필수 값(path, remote_url) 해결 — CLI 인자 / 환경 변수 / 인터뷰 ([values.md](values.md)) | 누락된 값만 인터뷰로 추가 수집 |
 | 2 | 현재 디렉토리가 git 저장소 (`git rev-parse --git-dir`) | "현재 디렉토리는 git 저장소가 아닙니다. `git init` 후 다시 시도하세요." |
-| 3 | config의 `path` 위치가 비어있거나 미존재 | 디렉토리가 이미 있고 비어있지 않으면 사용자 확인: 덮어쓰기 / 다른 path / 취소 |
+| 3 | 받은 `path` 위치가 비어있거나 미존재 | 디렉토리가 이미 있고 비어있지 않으면 사용자 확인: 덮어쓰기 / 다른 path / 취소 |
 | 4 | `.gitignore`에 `path`가 무시 대상이 아닌지 | 무시 중이면 경고 + 사용자 확인 (submodule은 추적 대상이어야 함) |
 | 5 | 원격 인증 ping (SSH는 `ssh -T <host>`, HTTPS는 `git ls-remote <url>`) | 인증 가이드(아래 "인증" 섹션) 안내 후 중단 |
 
@@ -31,7 +31,7 @@
    ```
    빈 공유 문서 레포가 필요합니다. 다음을 수행하세요:
      1. <호스트>에서 빈 레포 생성 (README/.gitignore/license 없이)
-     2. URL을 .claude/shared-docs.json의 remote_url에 입력
+     2. URL을 복사해 이 세션의 --remote-url 인자 또는 인터뷰 응답에 입력
      3. 준비됐으면 'ok' 입력
    ```
 2. `ok` 받으면 임시 디렉토리에 `git init -b main`
@@ -52,8 +52,8 @@ git commit -m "feat: add shared-docs submodule at <path>"
 
 주의:
 
-- `<path>`는 config의 `path` 그대로 사용 (변환·정규화 금지 — 팀이 정한 경로를 존중)
-- `-b <branch>`는 추적 브랜치 명시 (없으면 detached HEAD로 시작해 sync가 꼬임)
+- `<path>`는 해결된 값 그대로 사용 (변환·정규화 금지 — 사용자가 입력한 경로를 존중)
+- `-b <branch>`는 추적 브랜치 명시 (없으면 detached HEAD로 시작해 sync가 꼬임). 브랜치가 입력되지 않았으면 기본값 `main` 사용
 - 명령 실행 후 `.gitmodules`가 자동 생성되며 부모 레포 루트에 위치 — 커밋에 포함되는지 확인
 - 부모 레포의 staging에 `.gitmodules` + `<path>` 두 개가 함께 add되어야 함
 
@@ -120,7 +120,7 @@ glab auth login --hostname gitlab.com
 self-hosted GitLab:
 
 ```bash
-# config.host_url이 있으면 그 값을 그대로 전달
+# host_url(remote_url에서 추론 또는 --host-url로 명시)이 있으면 그대로 전달
 glab auth login --hostname gitlab.example.com
 
 # 토큰 인증 (CI/무인 환경)

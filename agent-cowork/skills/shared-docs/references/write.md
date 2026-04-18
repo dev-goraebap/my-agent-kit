@@ -10,7 +10,7 @@
 
 | 분류 | 기준 | 흐름 |
 |---|---|---|
-| **작은 수정** | 변경 줄 수 ≤ `small_edit_threshold` (기본 20) AND 단일 파일 AND 의미 변경 없음(오타/포맷/문구 다듬기) | main 직접 push |
+| **작은 수정** | 변경 줄 수 ≤ 기본 20줄 (CLI 인자 `--small-edit-threshold`로 override 가능) AND 단일 파일 AND 의미 변경 없음(오타/포맷/문구 다듬기) | main 직접 push |
 | **큰 수정** | 그 외 — 새 페이지, 구조 변경, 정책 변경, 다파일 동시 수정 | feature 브랜치 + PR |
 
 판단이 애매하면 **항상 큰 수정으로 분류**(PR 강제). 문서는 한번 머지되면 팀 전체의 source-of-truth가 되니 보수적으로.
@@ -79,14 +79,13 @@ git push -u origin docs/<topic>
 
 ### 호스트 감지 + PR 생성
 
-push 후 `config.pr_tool`에 따라 분기:
+push 후 `remote_url` 호스트로 PR 도구를 추론 ([values.md](values.md)의 pr_tool 표 참조):
 
-- `pr_tool: "gh"` → GitHub, `gh` CLI 사용
-- `pr_tool: "glab"` → GitLab(.com 또는 self-hosted), `glab` CLI 사용
-- `pr_tool: "auto"` (기본) → `remote_url` 호스트로 추론
-  - `github.com` → `gh`
-  - `gitlab.com` 또는 `gitlab.*` 호스트 → `glab`
-  - 그 외 → 사용자에게 한 번 묻기
+- `github.com` → `gh`
+- `gitlab.com` 또는 `gitlab.<domain>` 호스트 → `glab`
+- 그 외 호스트 → 사용자에게 한 번 물음
+
+CLI 인자 `--pr-tool=gh|glab`로 1회 override 가능.
 
 CLI 미설치 시: push 응답에 호스트가 자동으로 띄워주는 PR/MR 생성 URL을 사용자에게 안내하고 거기서 직접 만들도록 위임.
 
@@ -130,7 +129,7 @@ glab mr create --target-branch main --draft --title "..." --description "..."
 - `--assignee <user>` — 담당자 (GitLab은 reviewer와 별개)
 - `--label <label>` — 라벨
 
-self-hosted GitLab은 `config.host_url`을 `glab`에 알려줘야 한다 — 다음 중 하나:
+self-hosted GitLab은 host URL을 `glab`에 알려줘야 한다. URL은 `remote_url`에서 추론(`git@gitlab.<domain>:...` → `https://gitlab.<domain>`)하거나 CLI 인자 `--host-url=...`로 명시한다. 전달 방식은 다음 중 하나:
 
 ```bash
 # (1) 환경 변수 (이번 호출에만)
@@ -140,7 +139,7 @@ GITLAB_URI="https://gitlab.example.com" glab mr create ...
 glab config set -g gitlab_uri https://gitlab.example.com
 ```
 
-이 스킬은 `config.host_url`이 있으면 (1) 환경 변수 방식을 명령에 자동으로 prefix해 호출 — 사용자의 전역 glab 설정을 건드리지 않는다.
+이 스킬은 host URL이 해결되면 (1) 환경 변수 방식을 명령에 자동으로 prefix해 호출 — 사용자의 전역 glab 설정을 건드리지 않는다.
 
 PR/MR이 머지된 후 부모 레포 bump (아래 "부모 레포 bump" 섹션).
 
