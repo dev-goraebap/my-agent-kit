@@ -1,6 +1,8 @@
 # values
 
-shared-docs 스킬은 동작에 필요한 값(path, remote_url, branch, pr_tool 등)을 **별도 config 파일에 저장하지 않는다**. 이미 있는 곳(`.gitmodules`, `remote_url` 자체)에서 읽거나 추론하고, 필요한 최소한의 힌트만 `AGENTS.md`/`CLAUDE.md`의 `## References` 섹션에 남긴다.
+shared-docs 스킬은 동작에 필요한 값(path, remote_url, branch, pr_tool 등)을 **별도 config 파일에 저장하지 않는다**. 이미 있는 곳(`.gitmodules`, `remote_url` 자체)에서 읽거나 추론하고, 복수 submodule 환경의 식별 힌트만 `AGENTS.md`/`CLAUDE.md`의 `## External Tools` 섹션에 자기 엔트리로 남긴다.
+
+> **왜 `## External Tools`인가?** 이 섹션은 `agent-cowork:draft-public-rules`가 프로젝트의 외부 도구·스킬·MCP 인벤토리로 큐레이션하는 자리다. shared-docs도 submodule 기반 외부 도구이므로 여기가 맞는 자리. shared-docs는 **자기 엔트리만** 추가·갱신하고 다른 엔트리는 건드리지 않아 draft-public-rules와 역할 겹침이 없다. `## References`는 PRD·ADR 같은 **참조 문서 위치** 전용으로 남겨두어 용도가 섞이지 않게 유지한다.
 
 ## 해결 순서 (위가 강함)
 
@@ -32,7 +34,7 @@ git config --file .gitmodules --get-regexp "submodule\..*\.branch"
 프로젝트에 submodule이 여러 개면 어느 게 shared-docs인지 식별이 필요하다. 순서:
 
 1. **단일 submodule** → 그 submodule을 자동으로 shared-docs로 간주 (묻지 않음).
-2. **복수 submodule** → 루트 `AGENTS.md`(우선) 또는 `CLAUDE.md`의 `## References` 섹션에서 **`Shared docs submodule: <path>`** 형태의 힌트를 찾는다.
+2. **복수 submodule** → 루트 `AGENTS.md`(우선) 또는 `CLAUDE.md`의 `## External Tools` 섹션에서 **`shared-docs (submodule): <path>`** 형태의 자기 엔트리를 찾는다.
 3. **힌트 없음** → 사용자에게 한 번 물음:
 
     ```
@@ -43,15 +45,15 @@ git config --file .gitmodules --get-regexp "submodule\..*\.branch"
     shared-docs로 사용할 submodule은 어느 것인가요?
     ```
 
-4. 답 받으면 `## References` 섹션에 한 줄 추가를 제안 (섹션이 없으면 문서 끝에 신설):
+4. 답 받으면 `## External Tools` 섹션에 한 줄 추가를 제안 (섹션이 없으면 문서 끝에 신설):
 
     ```markdown
-    ## References
+    ## External Tools
     ...
-    - Shared docs submodule: `docs/shared`
+    - shared-docs (submodule): `docs/shared`
     ```
 
-    사용자 동의 후 기록. 이후 호출부터는 재질문 없이 같은 값을 사용한다.
+    사용자 동의 후 기록. 이후 호출부터는 재질문 없이 같은 값을 사용한다. 다른 도구의 엔트리는 절대 수정·재배치하지 않는다.
 
 ### init 시점 (submodule이 아직 없음)
 
@@ -133,5 +135,5 @@ export SHARED_DOCS_REMOTE_URL=git@github.com:org/hr-docs.git
 `.claude/shared-docs.json`이 있는 프로젝트는 다음 단계로 전환:
 
 1. 기존 config의 `path` / `remote_url` / `branch`는 이미 `.gitmodules`에 있으므로 그대로 사용된다. 별도 작업 불필요.
-2. 복수 submodule 환경이었다면 `AGENTS.md`의 `## References`에 `Shared docs submodule: <path>` 한 줄 추가.
+2. 복수 submodule 환경이었다면 `AGENTS.md`의 `## External Tools`에 `- shared-docs (submodule): <path>` 한 줄 추가 (섹션이 없으면 신설).
 3. `.claude/shared-docs.json` 파일은 삭제 (또는 `.gitignore`에 추가).

@@ -142,7 +142,7 @@ CLAUDE.md 검토해줘
 
 **주요 동작:**
 
-- **경로·브랜치·원격 URL은 `.gitmodules`에서 읽음** — submodule 추가 시 이미 저장되는 값이라 별도 config 파일을 만들지 않습니다. 복수 submodule 환경에서 어느 게 shared-docs인지 구분해야 할 때만 루트 `AGENTS.md`/`CLAUDE.md`의 `## References`에 `Shared docs submodule: <path>` 한 줄을 남깁니다 (팀마다 `docs/shared`, `docs-shared`, `ref/` 등 컨벤션이 다르기 때문)
+- **경로·브랜치·원격 URL은 `.gitmodules`에서 읽음** — submodule 추가 시 이미 저장되는 값이라 별도 config 파일을 만들지 않습니다. 복수 submodule 환경에서 어느 게 shared-docs인지 구분해야 할 때만 루트 `AGENTS.md`/`CLAUDE.md`의 `## External Tools`에 `- shared-docs (submodule): <path>` 한 줄을 남깁니다. `draft-public-rules`가 큐레이션하는 자리와 동일한 섹션 — shared-docs도 submodule 기반 외부 도구이므로 여기가 맞는 자리이며, shared-docs는 자기 엔트리만 건드려 역할 겹침이 없습니다
 - **GitHub Flow 기본** — `main` 직접 push(작은 수정) vs feature 브랜치 + PR(큰 수정). 변경 분석 후 자동 분류하되 사용자 확인
 - **GitHub + GitLab 양쪽 지원** — `gh`/`glab` CLI 옵션 차이(`--base` vs `--target-branch`, `--body` vs `--description` 등) 매핑. self-hosted GitLab은 `GITLAB_URI` 환경변수로 호출 (전역 설정 비침투)
 - **인증 두 트랙 분리 안내** — git 인증(SSH/HTTPS)과 PR 도구 인증(`gh auth login` / `glab auth login`)을 별도로 검증
