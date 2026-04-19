@@ -6,8 +6,8 @@ description: >
   init(공유 문서 레포 신규 생성 + submodule 연결), sync(원격 갱신 받기),
   write(문서 작성 → push → PR, GitHub Flow 기반), doctor(흔한 함정 검증).
   경로/브랜치/원격 URL은 **`.gitmodules`를 source of truth로** 읽고, 복수
-  submodule 환경의 식별 힌트만 `AGENTS.md`/`CLAUDE.md`의 `## References`
-  섹션에 남긴다 — 별도 config 파일은 만들지 않는다. GitHub Flow 기본:
+  submodule 환경의 식별 힌트만 `AGENTS.md`/`CLAUDE.md`의 `## External Tools`
+  섹션에 자기 엔트리로 남긴다 — 별도 config 파일은 만들지 않는다. GitHub Flow 기본:
   main + short-lived 브랜치 + PR. 작은 수정은 main 직접 push 허용.
   Triggers: "shared docs", "공유 문서 셋업", "submodule 추가",
   "submodule 갱신", "공유 문서 수정", "공유 문서 PR", "공유 문서 진단",
@@ -44,7 +44,7 @@ metadata:
 
 ## 값 해결 (path·URL·branch 등)
 
-이 스킬은 경로·브랜치·원격 URL을 **하드코딩하지 않지만, 별도 config 파일도 만들지 않는다**. 이미 있는 곳(`.gitmodules`, `remote_url` 자체)에서 읽거나 추론하고, 복수 submodule 환경에서 어느 게 shared-docs인지 구분이 필요할 때만 `AGENTS.md`/`CLAUDE.md`의 `## References` 섹션에 힌트 한 줄을 남긴다.
+이 스킬은 경로·브랜치·원격 URL을 **하드코딩하지 않지만, 별도 config 파일도 만들지 않는다**. 이미 있는 곳(`.gitmodules`, `remote_url` 자체)에서 읽거나 추론하고, 복수 submodule 환경에서 어느 게 shared-docs인지 구분이 필요할 때만 `AGENTS.md`/`CLAUDE.md`의 `## External Tools` 섹션에 자기 엔트리를 한 줄 추가한다 — 이 섹션은 `agent-cowork:draft-public-rules`가 외부 도구·스킬·MCP 인벤토리로 쓰는 자리와 같으며, shared-docs도 submodule 기반 외부 도구이므로 톤이 맞다. shared-docs는 자기 엔트리만 건드리고 다른 도구의 엔트리는 수정하지 않아 역할 겹침이 없다.
 
 자세한 해결 순서·환경변수·CLI 인자는 [references/values.md](references/values.md) 참조.
 
