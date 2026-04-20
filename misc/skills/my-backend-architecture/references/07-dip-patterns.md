@@ -4,11 +4,11 @@ section: dip-patterns
 
 # DIP Patterns
 
-같은 레이어 슬라이스 간 참조가 필요해질 때의 해결 기법. 두 방향(A안·B안)을 **동등하게** 소개하고 상황별 선택 기준을 제시한다.
+같은 레이어 module 간 참조가 필요해질 때의 해결 기법. 두 방향(A안·B안)을 **동등하게** 소개하고 상황별 선택 기준을 제시한다.
 
 ## 시나리오
 
-### 시나리오 A — app 레이어 슬라이스 간 (API 리소스끼리)
+### 시나리오 A — app resource 간 (API 리소스끼리)
 
 `app/employees`의 퇴사 처리 기능이 `app/payroll`의 급여 정지 기능을 필요로 한다.
 
@@ -17,11 +17,11 @@ app/employees/employees.service.ts
   └─ 퇴사 처리 시 → app/payroll/payroll.service.ts 의 stopPayroll() 호출하고 싶음
 ```
 
-[`02-slices.md`](02-slices.md) 규칙상 같은 레이어 참조는 금지. 해결책 두 가지 (아래 A안/B안).
+[`02-modules.md`](02-modules.md) 규칙상 같은 레이어 참조는 금지. 해결책 두 가지 (아래 A안/B안).
 
 ### 시나리오 B — domain Bounded Context 간
 
-Slice 방식 domain(다중 Bounded Context)에서 `domain/payroll`이 `domain/organization`의 Employee 정보를 필요로 한다.
+BC 단위 domain(다중 Bounded Context)에서 `domain/payroll`이 `domain/organization`의 Employee 정보를 필요로 한다.
 
 ```
 domain/payroll/payroll.service.ts
@@ -57,7 +57,7 @@ app/payroll/payroll.service.ts는 자기 도메인 처리만 담당
 장점:
 
 - 구조가 선명하다. "이 기능은 여러 도메인을 엮는다"는 의도가 이름에 담김.
-- 재사용성 명확 (다른 app 슬라이스도 같은 use-case 호출 가능).
+- 재사용성 명확 (다른 app module도 같은 use-case 호출 가능).
 
 단점:
 
@@ -72,7 +72,7 @@ app/payroll/payroll.service.ts는 자기 도메인 처리만 담당
 
 ## B안: 계약(인터페이스) 분리
 
-원 슬라이스가 계약을 export하고, 타 슬라이스는 계약만 참조. 구현체는 자리 유지.
+원 module가 계약을 export하고, 타 module는 계약만 참조. 구현체는 자리 유지.
 
 ### 구조
 
@@ -98,19 +98,70 @@ app/employees/employees.service.ts ──▶ PayrollStopper (인터페이스)
 
 장점:
 
-- 새 레이어 도입 없음.
+- 새 레이어 도입 최소 (아래 B-2 변형은 레이어 1개 추가).
 - 의존 방향이 **추상에 대한 의존**으로 역전 (DIP의 전형).
 
 단점:
 
-- 모듈 파일에 import는 여전 — 완전한 경계 격리에는 추가 조치 필요.
-- 계약 이름을 어디 두는지에 따라 어색할 수 있음 (원 슬라이스? 별도 폴더?).
+- 계약을 어디 두느냐로 어색함이 생길 수 있음 → 아래 B-1 / B-2 선택.
+- NestJS 모듈 시스템에서 module 파일에 구체 import가 여전히 남는 경우가 있음 — 상세·해결은 [`09-framework-notes.md`](09-framework-notes.md).
 
-### 적합한 경우
+### B-1 — 계약을 원 module에 둠
 
-- 레이어 수를 늘리고 싶지 않을 때.
-- 두 슬라이스 사이 결합이 **약한 API 한두 개**에 그칠 때.
-- CQRS나 EventBus 같은 런타임 수신자 은닉을 적용하기 전 중간 단계.
+위 구조 예시가 B-1. 계약 파일(`payroll-stopper.contract.ts`)을 `app/payroll/` 안에 두고 barrel로 export. 소비자(`app/employees`)가 `app/payroll` module을 import한 뒤 계약만 바라봄.
+
+**적합**: 계약이 한두 개, 소비자가 소수(1~2개 module).
+**한계**: 소비자 module이 제공자 module을 실제로 import하므로 정적 경계 분석기에서는 "같은 레이어 참조"로 감지됨. 소비자가 늘거나 계약 수가 늘면 의존 그래프가 복잡.
+
+### B-2 — 계약을 `contracts/` 레이어로 중앙 집중
+
+계약을 **별도 레이어**(`contracts/`)로 올려 중앙 집중. `app` 양쪽 module은 `contracts/`만 바라봄.
+
+```
+contracts/                         ← 선택 레이어 (01-layers 참조)
+└── payroll-stopper/
+    ├── index.ts                   (barrel — 인터페이스와 토큰만 export)
+    └── payroll-stopper.contract.ts
+
+app/payroll/
+├── index.ts
+├── payroll.module.ts              ← contracts 구현 등록:
+│                                    { provide: PAYROLL_STOPPER, useClass: PayrollService }
+└── payroll.service.ts             implements PayrollStopper
+
+app/employees/
+├── index.ts
+├── employees.module.ts            ← contracts 참조만. app/payroll import 없음.
+└── employees.service.ts           @Inject(PAYROLL_STOPPER)
+```
+
+**적합**:
+
+- 소비자가 여러 module에 걸침 (Notifier·Logger 같이 광범위 공용 계약)
+- app 레이어에서 "같은 레이어 module 참조 금지"를 정적 분석기로 엄격히 강제하고 싶을 때
+- 여러 BC·여러 use-case가 공유하는 계약
+
+**한계**:
+
+- 레이어 1개 추가 — 프로젝트가 작으면 과함
+- 계약 자체에도 관리 비용 (이름·토큰·버전)
+
+### B-1 vs B-2 선택
+
+| 조건 | 선택 |
+|------|------|
+| 계약 1~2개 + 소비자 1~2개 | **B-1** (원 module에 둠) |
+| 계약 여러 개 또는 소비자 다수 | **B-2** (contracts 레이어로 중앙 집중) |
+| app module 간 import를 완전히 차단하고 싶음 | **B-2** |
+| 레이어 수 최소화가 우선 | **B-1** |
+
+계약끼리 참조하는 일은 거의 없으니 `contracts/` 안에서 module 간 참조 규칙은 사실상 "참조 없음"으로 유지.
+
+### 적합한 경우 (B안 전체)
+
+- 레이어 수 최소화 (B-1) 또는 정적 경계 강제 (B-2)
+- 두 module 사이 결합이 **약한 API 한두 개**에 그칠 때 (B-1) / 여러 곳에서 공유 (B-2)
+- CQRS·EventBus 같은 런타임 수신자 은닉을 적용하기 전 중간 단계
 
 ## A안 vs B안 선택 기준
 
@@ -167,15 +218,15 @@ DIP의 정확한 적용: **"고수준 모듈이 저수준 모듈에 의존하지
 
 매번 A/B 기법을 꺼내기보다 **중복을 수용하는 게 나은 경우**도 많다.
 
-- 두 슬라이스의 로직이 겹쳐 보이지만 **도메인 의미가 다르다** (우연한 중복) → 각자 유지.
+- 두 module의 로직이 겹쳐 보이지만 **도메인 의미가 다르다** (우연한 중복) → 각자 유지.
 - 재사용 횟수가 1회뿐 → 미리 추상화하지 말기 (AHA 원칙 — Avoid Hasty Abstractions).
 
 **3번째 재사용 시점**에 A/B 중 하나 적용이 경험적 균형.
 
 ## 체크리스트
 
-- [ ] 같은 레이어 슬라이스 import를 하고 있나? → A/B 검토.
-- [ ] 이미 비슷한 조합이 다른 슬라이스에 있는가? → A안 유력.
+- [ ] 같은 레이어 module import를 하고 있나? → A/B 검토.
+- [ ] 이미 비슷한 조합이 다른 module에 있는가? → A안 유력.
 - [ ] 레이어 수를 늘리고 싶지 않은가? → B안.
 - [ ] 계약 이름이 동사형인가? (`PostRemover` vs `IPostsService`)
 - [ ] B안 채택 후 모듈 import 경계를 정적으로 강제할 수단은? → [`09-framework-notes.md`](09-framework-notes.md).

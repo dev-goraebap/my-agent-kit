@@ -74,14 +74,14 @@ export class User {
 
 ### 구성
 
-- **스키마**는 `infrastructure/db/schema/`에 (도메인 이름이 묻는 파일이라 `shared` 부적합).
+- **스키마**는 `shared/db/schema/`에 — 스키마 자체는 "테이블 정의"라는 기술 자산이지 도메인 모델이 아니므로 `shared` 레이어가 적합하다. 파일명에 `users` 같은 테이블 이름이 들어가도 도메인 개념이 아닌 DB 관점의 식별자라 원칙과 충돌하지 않음.
 - **도메인 모델**(POJO 또는 클래스)은 `domain/users/user.ts`.
 - **리포지토리**가 스키마 ↔ 도메인 모델 매핑 책임.
 
 ### 예시 개요
 
 ```
-// infrastructure/db/schema/users.ts
+// shared/db/schema/users.ts
 export const usersTable = pgTable('users', {
   id: uuid('id').primaryKey(),
   email: text('email').notNull(),
@@ -100,7 +100,7 @@ export class User {
   canLogin(): boolean { return this.status === 'ACTIVE'; }
 }
 
-// infrastructure/users/user.drizzle.repository.ts
+// infrastructure/workforce/user.drizzle.repository.ts
 export class DrizzleUserRepository implements UserRepository {
   async findById(id: string): Promise<User | null> {
     const rows = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
@@ -188,7 +188,37 @@ export interface UserRepository {
 
 ### 구현체 위치
 
-구현체는 항상 **`infrastructure/<context>/` 레이어**에 둔다 — 도메인 이름(`users`, `employee`, `order`)이 파일명에 들어가는 순간 `shared` 원칙("도메인 무관 기술 세그먼트")과 충돌한다. `shared/db/`에는 **도메인 무관 베이스**(`BaseTypeOrmRepository`, `TransactionManager`, DB 연결 팩토리)만 둔다.
+Repository 구현체는 항상 **`infrastructure/` 레이어**에 둔다 — `domain` 인터페이스를 어떤 ORM으로 어떻게 매핑하는지가 담기는 자리다. 파일명은 보통 도메인 이름 + 기술 이름이 결합(`infrastructure/workforce/employee.typeorm.repository.ts`).
+
+`shared/db/`와 `infrastructure/` 역할 분담:
+
+| | shared/db/ | infrastructure/ |
+|---|------------|-----------------|
+| 담는 것 | **스키마·마이그레이션·DB 연결·베이스 리포지토리·트랜잭션 매니저** | **Repository 구현체·Query Service·외부 API 어댑터** |
+| 파일명에 도메인 이름? | 스키마 파일에 테이블 이름 등장 가능(`users.ts`)하지만 "테이블 식별자" 관점이라 예외 인정 | 도메인 이름과 기술 이름이 결합되는 게 정상 |
+| 다른 레이어에서 import | 모든 레이어 (shared이므로) | `app`·`use-cases`·`contracts`가 DI를 통해 참조. domain은 인터페이스만 정의하고 구현은 모름 |
+
+구체 배치 예:
+
+```
+shared/db/
+├── connection.ts                         (DataSource / Drizzle db 팩토리)
+├── transaction-manager.ts
+├── base-typeorm.repository.ts            (도메인 무관 베이스)
+├── schema/                               (Drizzle / Prisma 스키마)
+│   ├── users.ts
+│   ├── employees.ts
+│   └── ...
+└── migrations/                           (drizzle-kit · typeorm migration)
+
+infrastructure/
+├── workforce/
+│   ├── employee.typeorm.repository.ts    (domain/workforce/employee 인터페이스 구현)
+│   └── queries/
+│       └── employee.query-service.ts
+└── payment/
+    └── stripe.gateway.ts                  (외부 API 어댑터)
+```
 
 작은 프로젝트에서도 infrastructure는 가볍게 시작 가능 — 파일 몇 개로 족하다. 규모가 커지면 Context별 서브폴더(`infrastructure/organization/`, `infrastructure/payroll/`)로 분화.
 
@@ -217,8 +247,71 @@ export interface UserRepository {
 3. SQL 가까운 제어? → Drizzle
 4. 스키마 DSL + 자동 마이그레이션 편의? → Prisma
 
+## ORM 관계의 Bounded Context 경계 주의
+
+도메인끼리 참조는 허용되지만 **ORM 관계를 BC 경계 넘어 맺는 것은 피한다**.
+
+### TypeORM
+
+```ts
+// 지양 — 다른 BC의 Entity와 @ManyToOne
+@Entity()
+class Payroll {
+  @ManyToOne(() => Employee)         // ← Workforce BC의 Employee
+  employee: Employee;
+}
+
+// 권장 — ID 컬럼만
+@Entity()
+class Payroll {
+  @Column('uuid')
+  employeeId: string;
+}
+```
+
+관계 선언(`@ManyToOne`·`@OneToMany`·`@ManyToMany`)이 BC 경계를 넘으면:
+
+- Cascade·eager loading이 두 BC를 엮음
+- 마이그레이션이 두 BC의 변경을 한 트랜잭션에 묶음
+- 마이크로서비스 분리 시 ORM 리팩터 비용 폭증
+
+### Drizzle
+
+```ts
+// 지양 — BC 경계 넘는 relations 선언
+export const payrollsRelations = relations(payrolls, ({ one }) => ({
+  employee: one(employees, {          // ← 다른 BC 테이블과 relation
+    fields: [payrolls.employeeId],
+    references: [employees.id],
+  }),
+}));
+
+// 권장 — relations 선언 생략, 조인이 필요하면 Query Service에서
+```
+
+### Prisma
+
+```prisma
+// 지양 — @relation이 BC 경계를 넘음
+model Payroll {
+  employee Employee @relation(fields: [employeeId], references: [id])
+}
+
+// 권장 — 일반 String 컬럼만
+model Payroll {
+  employeeId String
+}
+```
+
+### 원칙
+
+- **같은 BC 안 Aggregate 간**: ORM 관계 허용 (트랜잭션 경계 안이라 자연스러움). 단 Aggregate 경계는 신경.
+- **다른 BC 간**: ORM 관계 **금지**. ID 타입 참조만.
+- 조인이 필요한 화면 조회 → `infrastructure/queries/`의 Query Service에서 처리 (CQRS 경량 적용). 상세: [`03-app-layer.md`](03-app-layer.md).
+
 ## 관련
 
 - 도메인 모델 테스트 방법 → [`08-testing.md`](08-testing.md)
 - NestJS 통합 (TypeOrmModule vs DrizzleModule) → [`09-framework-notes.md`](09-framework-notes.md)
 - 리포지토리 인터페이스 위치 → [`04-domain-layer.md`](04-domain-layer.md)
+- module 간 참조 규칙 → [`02-modules.md`](02-modules.md)

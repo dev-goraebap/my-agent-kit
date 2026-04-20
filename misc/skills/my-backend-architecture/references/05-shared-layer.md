@@ -12,7 +12,7 @@ section: shared-layer
 |---|---|
 | `logger` | 로거 인터페이스 + 구현 (Winston·Pino 어댑터) |
 | `config` | `@nestjs/config` 기반 환경변수 파싱, zod schema 검증 |
-| `db` | DB 연결 팩토리, 트랜잭션 헬퍼, 공통 베이스 리포지토리 |
+| `db` | DB 연결 팩토리, 트랜잭션 헬퍼, 공통 베이스 리포지토리, **Drizzle/Prisma 스키마·마이그레이션** |
 | `util` | date(dayjs), string, number, crypto 헬퍼 |
 | `middleware` | HTTP 미들웨어 (request-id, access-log 등) |
 | `filters` | 예외 필터 (NestJS `HttpExceptionFilter`) |
@@ -20,9 +20,9 @@ section: shared-layer
 | `errors` | 도메인 무관 기반 에러 (`NotFoundError`, `UnauthorizedError`) |
 | `types` | 횡단 TypeScript 타입 (`Result<T, E>`, `Paginated<T>`) |
 
-## 슬라이스 간 상호 참조 허용
+## segment 간 상호 참조 허용
 
-`shared`는 [`02-slices.md`](02-slices.md) 규칙의 예외. 순환만 피하면 자유롭게 참조.
+`shared`는 [`02-modules.md`](02-modules.md) 규칙의 예외. 순환만 피하면 자유롭게 참조.
 
 ```
 shared/logger   ──▶ shared/config    (OK, logger가 로그 레벨 읽음)
@@ -63,12 +63,12 @@ shared/a ──▶ shared/b ──▶ shared/a   (순환 금지)
 
 `shared`는 프로젝트 수명 중 가장 빨리 비대해지는 레이어다. 정기적으로 감사.
 
-- [ ] 1~2회만 쓰이는 유틸이 있나? → 슬라이스 내부로 내리거나 삭제.
+- [ ] 1~2회만 쓰이는 유틸이 있나? → segment 내부로 내리거나 삭제.
 - [ ] 도메인 냄새 나는 파일이 끼었나? → domain으로 올린다.
 - [ ] 순환 있나? → 리팩터.
 - [ ] 세그먼트가 10개 이상인가? → 재분류 검토.
 
-## 슬라이스 내부 구조 예
+## segment 내부 구조 예
 
 ```
 shared/
@@ -77,13 +77,15 @@ shared/
 │   ├── pino-logger.ts
 │   └── logger.module.ts
 ├── config/
-│   ├── config.schema.ts         (zod)
+│   ├── config.schema.ts         (zod — 환경변수 검증용, ORM 스키마와 무관)
 │   ├── config.service.ts
 │   └── config.module.ts
 ├── db/
 │   ├── typeorm.module.ts
 │   ├── base-typeorm.repository.ts
-│   └── transaction-manager.ts
+│   ├── transaction-manager.ts
+│   ├── schema/                  (Drizzle/Prisma 스키마)
+│   └── migrations/              (drizzle-kit · typeorm migration)
 ├── util/
 │   ├── date.ts
 │   └── result.ts
@@ -103,11 +105,13 @@ shared/
 | 도메인 이름이 파일명에 등장? | **절대 안 됨** | 정상 (`infrastructure/users/user.typeorm.repository.ts`) |
 | 필수성 | 항상 필요 | 기본 권장 (작은 프로젝트에서도 가볍게 시작) |
 
-**왜 shared에 구현체를 두지 않나**: `shared`는 "도메인 의미 없는 기술 세그먼트" 원칙이다. `shared/db/users.typeorm.repository.ts`처럼 도메인 이름이 파일명에 들어가는 순간 원칙 위반 — `infrastructure`가 그 자리.
+**왜 shared에 Repository 구현체를 두지 않나**: `shared`는 "도메인 의미 없는 기술 세그먼트" 원칙이다. `shared/db/users.typeorm.repository.ts`처럼 도메인 이름이 파일명에 들어가는 순간 원칙 위반 — `infrastructure`가 그 자리.
+
+**스키마는 예외**: Drizzle/Prisma의 스키마 파일(`shared/db/schema/users.ts`)은 테이블 이름이 파일명에 들어가도 "DB 테이블 정의"라는 기술 자산이지 도메인 모델이 아니다. 여러 Repository 구현체가 공유하는 자원이며 마이그레이션 생성에도 쓰이므로 `shared/db/`가 자연스러운 자리. 상세한 배치는 [`06-orm-strategies.md`](06-orm-strategies.md)의 shared/db vs infrastructure 구분.
 
 ## 체크리스트
 
 - [ ] shared 어떤 파일에 도메인 용어가 등장하는가? → domain으로 이동.
 - [ ] shared 간 순환 있는가? → 리팩터 필수.
-- [ ] 공통 유틸이 실제로는 한 슬라이스만 쓰는가? → 슬라이스 내부로 이동.
+- [ ] 공통 유틸이 실제로는 한 segment만 쓰는가? → segment 내부로 이동.
 - [ ] shared → domain import 있는가? → **절대 금지**. DIP로 해결.

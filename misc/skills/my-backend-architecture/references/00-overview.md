@@ -42,7 +42,7 @@ section: overview
 대신 지키는 것:
 
 - 레이어 의존의 **단방향성**
-- 슬라이스 경계 (`02-slices.md`)
+- module 경계 (`02-modules.md`)
 - 도메인 정책의 **단위 테스트 가능성**
 
 ## When to Apply
@@ -63,7 +63,7 @@ section: overview
 ## 다음에 읽을 파일
 
 - 레이어 정의 → `01-layers.md`
-- 슬라이스 참조 규칙 → `02-slices.md`
+- module 참조 규칙 → `02-modules.md`
 - 특정 레이어 파고들기 → `03`~`05`
 - ORM에 따른 도메인 모델 배치 → `06-orm-strategies.md`
 - 같은 레이어 의존 해결 → `07-dip-patterns.md`
