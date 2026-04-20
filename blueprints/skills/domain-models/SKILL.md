@@ -3,8 +3,9 @@ name: domain-models
 description: >
   Aggregate 하나를 `{aggregate}.md` 한 장으로 생성·관리하는 스킬.
   Aggregate의 Role, Ubiquitous Language(용어 사전), 내부 구조(Entity·VO),
-  불변 규칙(Invariants), 외부 의존을 담아 해당 Aggregate를 빠르게 파악할 수 있는
-  밀도를 목표로 한다. 기본은 `domain/` 하위에 평탄(flat) 파일로 두고,
+  불변 규칙(Invariants), 교체 가능한 비즈니스 정책(Policies), 외부 의존을 담아
+  해당 Aggregate를 빠르게 파악할 수 있는 밀도를 목표로 한다.
+  기본은 `domain/` 하위에 평탄(flat) 파일로 두고,
   Bounded Context가 명확해지면 `domain/{bc}/` 폴더로 묶는다.
   "도메인 모델 만들어줘", "도메인 스펙 정리", "Aggregate 정의",
   "DOMAIN.md 만들어줘", "Ubiquitous Language 정리", "Aggregate 정리",
@@ -151,8 +152,8 @@ Project / Service
 | 섹션 | 언제 추가 |
 |------|-----------|
 | **Structure** | 내부 Entity·VO가 여럿이라 명시 필요할 때 |
+| **Policies** | "어기면 도메인이 망가지진 않지만" 교체 가능한 비즈니스 규칙이 있을 때 |
 | **External Dependencies** | 다른 Aggregate/BC를 참조할 때 |
-| **Related Policies** | 비즈니스 정책(POL-XXXX) 링크 |
 | **Open Questions** | 미결정 사안 |
 
 ### 4-3. Structure 섹션 포맷
@@ -169,7 +170,7 @@ Project / Service
 
 ### 4-4. Invariants 포맷
 
-**"이걸 어기면 도메인이 망가지나?"** → Yes면 여기. No면 정책(POL).
+**"이걸 어기면 도메인이 망가지나?"** → Yes면 여기. No면 `Policies` 섹션.
 
 ```markdown
 ## Invariants
@@ -183,10 +184,26 @@ Project / Service
 |------|------|---------|
 | 도메인 본질 규칙 | "주문은 최소 1개 항목" | Invariants |
 | 도메인 본질 규칙 | "총금액 = 항목금액 합" | Invariants |
-| 비즈니스 의사결정 | "주문 후 7일 내 무료 반품" | 별도 정책 문서 |
-| 비즈니스 의사결정 | "3만 원 이상 배송비 무료" | 별도 정책 문서 |
+| 비즈니스 의사결정 | "주문 후 7일 내 무료 반품" | Policies |
+| 비즈니스 의사결정 | "3만 원 이상 배송비 무료" | Policies |
 
-### 4-5. External Dependencies 포맷
+### 4-5. Policies 섹션 포맷
+
+"어기면 도메인이 망가지진 않지만" **비즈니스 결정으로 바뀔 수 있는 규칙**을 기록한다.
+구현 시 Strategy·Specification·Domain Service 패턴 후보가 된다.
+
+```markdown
+## Policies
+
+| 정책명 | 설명 | 구현 힌트 |
+|--------|------|-----------|
+| ShippingFeePolicy | 3만 원 이상 주문 시 무료배송 | Strategy |
+| DiscountPolicy | VIP 등급 10% 할인 적용 | Specification + Strategy |
+```
+
+정책이 없으면 섹션을 추가하지 않는다.
+
+### 4-6. External Dependencies 포맷
 
 ```markdown
 ## External Dependencies
@@ -252,16 +269,24 @@ BC 폴더가 이미 존재하면 그 안에 바로 배치. 없으면 신설.
 
 단순하면 생략 가능. 섹션을 추가할지 물어본다.
 
-### 5-6. Invariants 수집 (6단계)
+### 5-6. Invariants & Policies 수집 (6단계)
 
-**판단 질문**("이걸 어기면 도메인이 망가지나요?")으로 필터링. No이고 비즈니스 결정이면 정책으로 분리 안내.
+규칙 후보를 하나씩 판단 질문으로 분류한다.
+
+```
+"이걸 어기면 도메인이 망가지나요?"
+  Yes → Invariants
+  No  → "비즈니스 결정으로 바뀔 수 있는 규칙인가요?"
+           Yes → Policies (정책명·구현 힌트 함께 수집)
+           No  → 불필요 — 기록 대상 아님
+```
 
 ### 5-7. 선택 섹션 여부 (7단계)
 
 ```
 추가로 담을 섹션을 선택해주세요:
+  [ ] Policies (교체 가능한 비즈니스 정책)
   [ ] External Dependencies (다른 Aggregate/BC 참조)
-  [ ] Related Policies (POL 링크)
   [ ] Open Questions (미결정 사안)
 ```
 
@@ -283,19 +308,12 @@ BC 폴더가 이미 존재하면 그 안에 바로 배치. 없으면 신설.
 - **같은 BC 안이든 다른 BC든 Aggregate 간 참조는 ID로** — 객체 그래프 X.
 - **VO는 자유 소유** — 값이라 경계 밖에도 자연스러움.
 
-### 6-3. Related Policies 링크 포맷
+### 6-3. Policies 작성 원칙
 
-```markdown
-## Related Policies
-- [환불 정책](../../policies/refund.md)
-```
-
-값이 없으면 플레이스홀더로 남긴다:
-
-```markdown
-## Related Policies
-<!-- 정책 문서 추가 시 링크를 여기에 기록합니다 -->
-```
+- **정책명은 구현 클래스·인터페이스명과 일치**시키는 것을 권장. (`ShippingFeePolicy`)
+- **구현 힌트**는 아키텍처 방향 제시용. `Strategy` / `Specification` / `Domain Service` 중 하나 이상.
+- 정책이 여러 Aggregate에 걸치면 → Domain Service 힌트. 단일 Aggregate 안이면 → Strategy.
+- **Invariants와 혼동 금지**: "이걸 바꿔도 `Aggregate`의 트랜잭션 일관성이 유지되는가?" → Yes면 Policy.
 
 ---
 
@@ -306,7 +324,8 @@ BC 폴더가 이미 존재하면 그 안에 바로 배치. 없으면 신설.
 | 요청 | 처리 |
 |------|------|
 | "VO 추가" | Structure 섹션 + Ubiquitous Language에 반영 |
-| "Invariant 추가" | Invariants 섹션에 항목 추가 |
+| "Invariant 추가" | 판단 질문 후 Invariants 또는 Policies에 반영 |
+| "정책 추가" | Policies 섹션에 정책명·설명·구현 힌트 추가 |
 | "외부 의존 제거" | External Dependencies 해당 행 제거 + Role 재검토 제안 |
 | "용어 재정의" | Ubiquitous Language 수정 + 본문 전역 변경은 `grep` 기반 안내 |
 | "BC 폴더로 묶어줘" | flat 파일을 `{bc}/` 폴더로 이동 제안 (`git mv`는 사용자 수동) |
@@ -378,8 +397,13 @@ related_aggregates: [Organization, Rank]
 ## Invariants
 
 - 직원은 반드시 소속 조직이 있다
-- 직급 변경은 12개월 이상 근속 후 가능
 - 상태 전이: ACTIVE → INACTIVE → DELETED (역방향 불가)
+
+## Policies
+
+| 정책명 | 설명 | 구현 힌트 |
+|--------|------|-----------|
+| RankPromotionPolicy | 직급 변경은 12개월 이상 근속 후 가능 | Strategy |
 
 ## External Dependencies
 
