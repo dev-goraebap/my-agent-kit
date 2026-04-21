@@ -18,10 +18,10 @@
       "version": "0.8.0"
     },
     {
-      "name": "blueprints",
-      "source": "./blueprints/",
-      "description": "Design-doc skills that support implementation: lean-prd (interview-based lightweight PRD), erd (Mermaid ERD at conceptual/logical/physical levels), domain-models (per-Aggregate .md files with BC folder grouping, invariants, and external-context collaboration). All skills use AGENTS.md/CLAUDE.md to store per-project paths instead of separate config files, and share a no-prefix naming philosophy for ongoing-maintenance documents.",
-      "version": "0.2.0"
+      "name": "ddd-workshop",
+      "source": "./ddd-workshop/",
+      "description": "Pipeline skills that guide a developer from a vague idea to DDD aggregate design. Seven conversational skills run in sequence: project-kickoff (context and scope), domain-research (epistemic self-audit and research), requirement-clarifier (gap and contradiction hunt), ubiquitous-language-extractor (glossary and homonym detection), event-flow-mapper (solo Event Storming), bounded-context-identifier (context boundary detection), strategic-classifier (Core/Supporting/Generic), aggregate-designer (aggregates, invariants, policies). Each skill is standalone, supports partial entry, and enforces Epistemic Honesty.",
+      "version": "0.1.0"
     }
   ]
 }
