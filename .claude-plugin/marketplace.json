@@ -20,8 +20,8 @@
     {
       "name": "ddd-workshop",
       "source": "./ddd-workshop/",
-      "description": "DDD pipeline — 5 conversational skills following subdomain → BC → Aggregate ordering. requirements-refiner (context + 8-item self-audit + optional web research + 1-Q-at-a-time queue), domain-language-extractor (UL + lightweight event flow + subdomain candidates), subdomain-classifier (Core/Supporting/Generic + Slice-first selection), context-designer (BC design + Context Map for the selected slice), aggregate-designer (Design-Level Event Storming + Aggregate + Invariant/Policy, one Aggregate per call). Every skill embeds a shared UX protocol, writes `sources:` headers for stale detection, and supports `--update` mode for delta edits when requirements shift.",
-      "version": "0.2.0"
+      "description": "DDD pipeline — 6 conversational skills following the canonical strategic-then-tactical order. requirements-refiner (Pre-DDD: context + UL base language + 8-item self-audit), event-storming-explorer (Big Picture Event Storming + subdomain *identification* only, no classification), subdomain-classifier (narrowed: Core/Supporting/Generic + Slice-first target), context-designer (Bounded Context + Context Map + per-BC Canvas with embedded per-BC Ubiquitous Language in bilingual 용어/Code Identifier/의미 format; cross-BC terms go to optional published-language.md), screen-inventory (optional per-BC screen list surfacing read-paths without wireframes), aggregate-designer (Design-Level Event Storming + Aggregate + Invariant/Policy + Exposed Queries cross-checked against screen-inventory; Aggregate-reconstruction-for-reads forbidden). Artifacts live in docs/shared/contexts/<bc>/ with no YAML frontmatter.",
+      "version": "0.3.0"
     }
   ]
 }
