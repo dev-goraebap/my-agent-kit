@@ -1,0 +1,92 @@
+---
+source_url: https://m3.material.io/foundations/designing/flow
+fetched_at: 2026-04-29
+section: foundations
+---
+
+# Accessibility designing
+
+Designing
+Implement intuitive, accessible layouts, considering structure, color, and flow
+Overview
+Color contrast
+Structure
+Flow
+Elements
+On this page
+Designing
+Color & contrast
+On this page
+Designing
+Labeling elements
+On this page
+Designing
+Focus order & key traversal
+Keyboard shortcuts
+
+Focus order & key traversal
+
+People should be able to navigate and interact with your app without the use of a traditional mouse or touch screen. To support navigation by keyboard, screen reader, or other assistive technology, goals should be achievable by using tab, arrow, and other common navigation keys. 
+
+Simplify your flows by: 
+
+strategically ordering tab stops 
+reducing overall page complexity
+
+Use defaults
+
+Avoid adding more work for yourself by using predefined tab ordering, unless a user journey needs special tailoring. The default order follows the DOM (the order of content as it's written in the source code) and generally flows from left to right; top to bottom. Keyboard navigation (key traversal) may be pre-defined within common components. Use the defaults unless you have a UX pattern or custom component that breaks from the default pattern.
+
+Determining user flows
+
+1. Group product use cases
+
+Group product use cases into primary and secondary user journeys. The priority of your use cases should influence the decisions you make about the priority of user flows.
+
+2. Define initial focus and component-level focus
+
+Focus refers to which control is currently the active target of user interactions, such as mouse clicks or keyboard taps. Generally, the tab key moves focus between interactive elements. 
+
+Define the initial focus when a user loads a screen, as well as initial focus for components with multiple interactive elements, like a complex card or a dialog.
+
+In the case of the Google homepage, even though there are links and buttons above and surrounding the search field on the page, it makes sense to put the user's initial focus on the element that supports the most common user goal
+
+Focus is particularly important when an element is activated by the user or the user changes context. 
+
+For example, when a dialog is triggered, check for the following:
+
+Focus is set to the dialog component, likely to a specific interactive element within the dialog such as a text input field or edit button
+When the user closes or cancels the dialog, focus returns to the interactive element that initiated the action
+Define initial focus and component-level focus
+
+3. Define any atypical key traversal through the page and components
+
+Users should be able to complete the primary and secondary user journeys using tab, arrow keys, and other keyboard shortcuts. 
+
+Navigating the interactive elements on a card via tab 
+
+Tab typically moves focus between interactive elements and is often used as primary navigation. Tab + Shift reverses direction.
+
+Arrow keys are typically used to navigate within components (for example, moving between cells in a form or traversing items in a menu.)
+
+Enter activates a link or button, or sends a form when a form item has focus.
+
+In the case of unique layouts and use cases, it can help to group a collection of interactive elements as one tab stop, and use arrow keys to traverse sub-elements
+
+Using Tab navigation to focus group
+Using arrrow key to traverse sub-elements
+
+Keyboard shortcuts
+
+Keyboard shortcuts help users access menus and app functions without using a mouse on desktop apps and websites.
+
+Requirements
+
+These requirements are important for helping speech users avoid activating multiple shortcuts at once and for keyboard-only users to minimize unwanted actions.
+
+Keyboard shortcuts should use a combination of two or more keys by default.
+Include a tutorial, list, or help center page of all custom keyboard shortcuts in your product. For example, Cmd+Z (Ctrl+Z) to undo deleting an event in Google Calendar.
+If a keyboard shortcut is activated with a single key, provide users with a way to take at least one of these actions:
+(Most preferred) Remap the shortcut to include one or more non-printable keyboard keys.
+(Preferred) Activate the shortcut only when a relevant component is focused.
+(Not preferred, only use as a temporary solution) Turn off the keyboard shortcut.
