@@ -13,6 +13,7 @@
 | [`docs-to-md`](skills/docs-to-md/SKILL.md) | 기술 문서 사이트 → 로컬 Markdown | `.md` 파일 / 폴더 + `index.md` |
 | [`fsd-docs`](skills/fsd-docs/SKILL.md) | Feature-Sliced Design v2.1 개념·실전 참조 | Progressive Disclosure 지식 팩 |
 | [`my-backend-architecture`](skills/my-backend-architecture/SKILL.md) | 개인 선호 백엔드 레이어 아키텍처 참조 | Progressive Disclosure 지식 팩 |
+| [`pg-query`](skills/pg-query/SKILL.md) | PostgreSQL DB 직접 조회 | Node.js `pg` 스크립트, 테이블/JSON 출력 |
 
 각 스킬 상세는 링크된 `SKILL.md` 참조.
 
@@ -28,7 +29,7 @@
 ### 그 외 에이전트 (`skills.sh`)
 
 ```bash
-npx skills add dev-goraebap/grimoire --skill pdf-parser --skill claude-hook-notify-setup --skill docs-to-md --skill fsd-docs --skill my-backend-architecture
+npx skills add dev-goraebap/grimoire --skill pdf-parser --skill claude-hook-notify-setup --skill docs-to-md --skill fsd-docs --skill my-backend-architecture --skill pg-query
 ```
 
 > 기획·설계 문서 스킬(`lean-prd`, `erd`, `domain-models`)은 `blueprints` 플러그인으로 이동했습니다. [blueprints/README.md](../blueprints/README.md) 참조.
