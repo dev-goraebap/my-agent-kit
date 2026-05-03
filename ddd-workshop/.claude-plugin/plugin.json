@@ -1,23 +1,26 @@
 {
   "name": "ddd-workshop",
-  "version": "0.2.0",
-  "description": "DDD pipeline: 5 conversational skills guide a developer from a vague idea to Aggregate design, following the subdomain → BC → Aggregate ordering. requirements-refiner (context + 8-item self-audit + optional web research + 1-Q-at-a-time queue), domain-language-extractor (UL + lightweight event flow + subdomain candidates — not BC candidates), subdomain-classifier (subdomain Core/Supporting/Generic + Slice-first choice), context-designer (BC design + Context Map for the selected slice), aggregate-designer (Design-Level Event Storming + Aggregate + Invariant/Policy, one Aggregate per call). Every skill embeds a shared UX protocol (numbered menus, progress markers, skip-allowed), writes `sources:` headers for stale detection, and supports `--update` mode for delta edits when requirements shift.",
+  "version": "0.4.0",
+  "description": "DDD pipeline — 7 conversational skills grouped into Pre-DDD, Strategic, Tactical, and Implementation phases. requirements-refiner (Pre-DDD: context + UL base language + 8-item self-audit + optional web research + 1-Q-at-a-time queue), event-storming-explorer (Strategic: Big Picture Event Storming + subdomain identification only, no classification), subdomain-classifier (Strategic: Core/Supporting/Generic + Slice-first target), context-designer (Strategic: Bounded Context + Context Map + per-BC Canvas with embedded per-BC Ubiquitous Language in bilingual 용어/Code Identifier/의미 format; cross-BC terms go to optional published-language.md), screen-inventory (Strategic, optional: per-BC screen list surfacing read-paths without wireframes), aggregate-designer (Tactical: Design-Level Event Storming + Aggregate + Invariant/Policy + Exposed Queries cross-checked against screen-inventory; Aggregate-reconstruction-for-reads forbidden), implementation-blueprint (Implementation: folder structure, layer boundaries, BC communication patterns for a monolithic backend via 10-question interview; produces docs/implementation-blueprint.md; covers folder names only, not file/class/function names). Artifacts live in docs/shared/contexts/<bc>/. Produced documents carry no YAML frontmatter — git history is the source of truth. Every skill embeds a shared UX protocol and supports --update for delta edits.",
   "author": {
     "name": "dev-goraebap",
     "email": "dev.goraebap@gmail.com"
   },
   "homepage": "https://github.com/dev-goraebap/grimoire",
-   "repository": "https://github.com/dev-goraebap/grimoire",
+  "repository": "https://github.com/dev-goraebap/grimoire",
   "license": "MIT",
   "keywords": [
     "ddd",
     "domain-driven-design",
     "subdomain",
     "bounded-context",
+    "bc-canvas",
     "ubiquitous-language",
     "event-storming",
+    "screen-inventory",
     "aggregate",
-    "epistemic-honesty",
+    "exposed-queries",
+    "read-model",
     "slice-first",
     "agent-skills"
   ]
